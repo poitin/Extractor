@@ -2,7 +2,7 @@ module Main (
     main
 ) where
 
-import Prove
+import Construct
 import Term
 import Transform
 import Text.ParserCombinators.Parsec
@@ -17,10 +17,7 @@ data Command = Load String
              | Prog
              | Term
              | Eval
-             | Super
-             | Distill
-             | Trans Int
-             | Prove
+             | Construct
              | Quit
              | Help
              | Unknown
@@ -31,10 +28,7 @@ command str = let res = words str
                    [":prog"] -> Prog
                    [":term"] -> Term
                    [":eval"] -> Eval
-                   [":super"] -> Super
-                   [":distill"] -> Distill
-                   [":trans",n] -> Trans (read n::Int)
-                   [":prove"] -> Prove
+                   [":construct"] -> Construct
                    [":quit"] -> Quit
                    [":help"] -> Help
                    _ -> Unknown
@@ -43,11 +37,7 @@ helpMessage = "\n:load filename\t\tTo load the given filename\n"++
                ":prog\t\t\tTo print the current program\n"++
                ":term\t\t\tTo print the current term\n"++
                ":eval\t\t\tTo evaluate the current term\n"++
-               ":super\t\t\tTo supercompile the current program\n"++
-               ":distill\t\t\tTo distill the current program\n"++
-               ":trans level\t\t\tTo transform the current program at the given level\n"++
-               ":termcheck\t\tTo termination check the current program\n"++
-               ":prove\t\t\tTo prove the current term\n"++
+               ":construct\t\t\tTo construct a program from the given specification\n"++
                ":quit\t\t\tTo quit\n"++
                ":help\t\t\tTo print this message\n"
 
@@ -101,29 +91,11 @@ toplevel p = do putStr "POT> "
                                                                 Left s -> do putStrLn ("Could not parse term: "++ show s)
                                                                              f (x:xs) t
                                                                 Right u -> f xs (subst u (abstract t x))
-                   Super -> case p of
-                               Nothing -> do putStrLn "No program loaded"
-                                             toplevel p
-                               Just t -> do let u = sup t
-                                            print u
-                                            toplevel (Just (u,[]))
-                   Distill -> case p of
-                                 Nothing -> do putStrLn "No program loaded"
-                                               toplevel p
-                                 Just t -> do let u = dist t
-                                              print u
-                                              toplevel (Just (u,[]))
-                   Trans n -> case p of
-                                 Nothing -> do putStrLn "No program loaded"
-                                               toplevel p
-                                 Just t -> do let u = transform n t
-                                              print u
-                                              toplevel (Just (u,[]))
-                   Prove -> case p of
-                               Nothing -> do putStrLn "No program loaded"
-                                             toplevel p
-                               Just t -> do print (prove (dist t))
-                                            toplevel p
+                   Construct -> case p of
+                                   Nothing -> do putStrLn "No program loaded"
+                                                 toplevel p
+                                   Just t -> do print (construct (dist t))
+                                                toplevel p
                    Quit -> return ()
                    Help -> do putStrLn helpMessage
                               toplevel p
