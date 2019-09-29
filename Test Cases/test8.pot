@@ -1,0 +1,4 @@
+import Nat
+
+main = ANY x:Nat.ALL y:Nat.eqNat (plus x y) y
+
